@@ -1,6 +1,7 @@
 const prisma = require("../config/prisma");
 const response = require("../utils/response");
 
+//GET /api/categories
 exports.getAllInventory = async (req, res) => {
   try {
     const inventory = await prisma.inventory.findMany({
@@ -18,6 +19,7 @@ exports.getAllInventory = async (req, res) => {
   }
 };
 
+//GET /api/categories/:id
 exports.getInventoryById = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -40,6 +42,7 @@ exports.getInventoryById = async (req, res) => {
   }
 };
 
+//POST /api/categories
 exports.createInventory = async (req, res) => {
   try {
     const { name, description, categoryId, initialStock } = req.body;
@@ -77,6 +80,7 @@ exports.createInventory = async (req, res) => {
   }
 };
 
+//PUT /api/categories/:id
 exports.updateInventory = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -98,6 +102,7 @@ exports.updateInventory = async (req, res) => {
   }
 };
 
+//DELETE /api/categories/:id
 exports.deleteInventory = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
