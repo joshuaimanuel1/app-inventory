@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(50)
+
+  inventories Inventory[]
+}
+
+model Inventory {
+  id          Int    @id @default(autoincrement())
+  name        String @db.VarChar(50)
+  description String @db.VarChar(200)
+  stock       Int    @default(0)
+
+  categoryId  Int
+  category    Category @relation(fields: [categoryId], references: [id])
+
+  histories   StockHistory[]
+}
+
+model StockHistory {
+  id          Int       @id @default(autoincrement())
+  inventoryId Int
+  inventory   Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  amount      Int
+  type        StockType
+  date        DateTime  @default(now())
+}
+
+enum StockType {
+  INCREMENT
+  DECREMENT
+}
