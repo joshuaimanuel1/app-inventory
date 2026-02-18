@@ -1,4 +1,14 @@
 import { Router } from "express";
+import { Role } from "@prisma/client";
+
+import authMiddleware from "../middlewares/authMiddleware";
+import { roleMiddleware } from "../middlewares/roleMiddleware";
+import validate from "../middlewares/validate";
+
+import {
+  createInventorySchema,
+  updateInventorySchema,
+} from "../validations/inventory.validation";
 
 import {
   getAllInventory,
@@ -8,29 +18,35 @@ import {
   deleteInventory,
 } from "../controllers/inventoryController";
 
-import validate from "../middlewares/validate";
+const router = Router();
 
-import {
-  createInventorySchema,
-  updateInventorySchema,
-} from "../validations/inventory.validation";
+//GET /api/inventory ADMIN & USER
+router.get("/", authMiddleware, getAllInventory);
 
-const router: Router = Router();
+router.get("/:id", authMiddleware, getInventoryById);
 
-//GET /api/inventories
-//get all inventory with pagination, sorting, filtering
-router.get("/", getAllInventory);
+//create inventory ADMIN ONLY
+router.post(
+  "/",
+  authMiddleware,
+  roleMiddleware(Role.ADMIN),
+  validate(createInventorySchema),
+  createInventory,
+);
 
-//GET /api/inventories/:id
-router.get("/:id", getInventoryById);
+router.put(
+  "/:id",
+  authMiddleware,
+  roleMiddleware(Role.ADMIN),
+  validate(updateInventorySchema),
+  updateInventory,
+);
 
-//POST /api/inventories
-router.post("/", validate(createInventorySchema), createInventory);
-
-//PUT /api/inventories/:id
-router.put("/:id", validate(updateInventorySchema), updateInventory);
-
-//DELETE /api/inventories/:id
-router.delete("/:id", deleteInventory);
+router.delete(
+  "/:id",
+  authMiddleware,
+  roleMiddleware(Role.ADMIN),
+  deleteInventory,
+);
 
 export default router;

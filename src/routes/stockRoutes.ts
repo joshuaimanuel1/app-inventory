@@ -1,14 +1,24 @@
 import { Router } from "express";
+import { Role } from "@prisma/client";
 
-import { updateStock } from "../controllers/stockController";
+import authMiddleware from "../middlewares/authMiddleware";
+import { roleMiddleware } from "../middlewares/roleMiddleware";
 
 import validate from "../middlewares/validate";
 
 import { updateStockSchema } from "../validations/stock.validation";
 
-const router: Router = Router();
+import { updateStock } from "../controllers/stockController";
 
-//POST /api/stocks
-router.post("/", validate(updateStockSchema), updateStock);
+const router = Router();
+
+//update stock ADMIN ONLY
+router.post(
+  "/",
+  authMiddleware,
+  roleMiddleware(Role.ADMIN),
+  validate(updateStockSchema),
+  updateStock,
+);
 
 export default router;

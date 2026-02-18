@@ -1,4 +1,15 @@
 import { Router } from "express";
+import { Role } from "@prisma/client";
+
+import authMiddleware from "../middlewares/authMiddleware";
+import { roleMiddleware } from "../middlewares/roleMiddleware";
+
+import validate from "../middlewares/validate";
+
+import {
+  createCategorySchema,
+  updateCategorySchema,
+} from "../validations/category.validation";
 
 import {
   getAllCategories,
@@ -8,28 +19,37 @@ import {
   deleteCategory,
 } from "../controllers/categoryController";
 
-import validate from "../middlewares/validate";
+const router = Router();
 
-import {
-  createCategorySchema,
-  updateCategorySchema,
-} from "../validations/category.validation";
-import { id } from "zod/v4/locales";
+//GET /api/categories ADMIN & USER
+router.get("/", authMiddleware, getAllCategories);
 
-const router: Router = Router();
+router.get("/:id", authMiddleware, getCategoryById);
 
-router.get("/", getAllCategories);
+//create category ADMIN ONLY
+router.post(
+  "/",
+  authMiddleware,
+  roleMiddleware(Role.ADMIN),
+  validate(createCategorySchema),
+  createCategory,
+);
 
-//GET /api/categories/:id
-router.get("/:id", getCategoryById);
+//update category ADMIN ONLY
+router.put(
+  "/:id",
+  authMiddleware,
+  roleMiddleware(Role.ADMIN),
+  validate(updateCategorySchema),
+  updateCategory,
+);
 
-//POST /api/categories
-router.post("/", validate(createCategorySchema), createCategory);
-
-//PUT /api/categories/:id
-router.put("/:id", validate(updateCategorySchema), updateCategory);
-
-//DELETE /api/categories/:id
-router.delete("/:id", deleteCategory);
+//delete category ADMIN ONLY
+router.delete(
+  "/:id",
+  authMiddleware,
+  roleMiddleware(Role.ADMIN),
+  deleteCategory,
+);
 
 export default router;

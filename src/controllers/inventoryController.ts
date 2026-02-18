@@ -115,30 +115,36 @@ export const createInventory = async (
   try {
     const { name, description, categoryId, initialStock } = req.body;
 
-    const result = await prisma.$transaction(async (tx) => {
-      const inventory = await tx.inventory.create({
-        data: {
-          name,
-          description,
-          categoryId,
-          stock: initialStock || 0,
-        },
-      });
+    const inventory = await prisma.inventory.create({
+      data: {
+        name,
+        description,
+        categoryId,
+        stock: initialStock || 0,
 
-      if (initialStock && initialStock > 0) {
-        await tx.stockHistory.create({
-          data: {
-            inventoryId: inventory.id,
-            amount: initialStock,
-            type: "INCREMENT",
-          },
-        });
-      }
+        histories:
+          initialStock && initialStock > 0
+            ? {
+                create: {
+                  amount: initialStock,
+                  type: "INCREMENT",
+                },
+              }
+            : undefined,
+      },
 
-      return inventory;
+      include: {
+        category: true,
+        histories: true,
+      },
     });
 
-    return response.success(res, result, "Inventory created", 201);
+    return response.success(
+      res,
+      inventory,
+      "Inventory created successfully",
+      201,
+    );
   } catch (err: any) {
     return response.error(res, err.message);
   }

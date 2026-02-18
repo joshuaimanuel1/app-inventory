@@ -6,6 +6,8 @@ import categoryRoutes from "./routes/categoryRoutes";
 import inventoryRoutes from "./routes/inventoryRoutes";
 import stockRoutes from "./routes/stockRoutes";
 import stockHistoryRoutes from "./routes/stockHistoryRoutes";
+import authRoutes from "./routes/authRoutes";
+import adminRoutes from "./routes/adminRoutes";
 
 const app: Application = express();
 
@@ -23,5 +25,8 @@ app.use("/api/stocks", stockRoutes);
 
 app.use("/api/stock-histories", stockHistoryRoutes);
 
+app.use("/api/auth", authRoutes);
+
+app.use("/api", adminRoutes);
 //export app
 export default app;
