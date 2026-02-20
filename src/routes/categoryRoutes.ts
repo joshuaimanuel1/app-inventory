@@ -22,9 +22,8 @@ import {
 const router = Router();
 
 //GET /api/categories ADMIN & USER
-router.get("/", authMiddleware, getAllCategories);
-
-router.get("/:id", authMiddleware, getCategoryById);
+router.get("/", getAllCategories);
+router.get("/:id", getCategoryById);
 
 //create category ADMIN ONLY
 router.post(

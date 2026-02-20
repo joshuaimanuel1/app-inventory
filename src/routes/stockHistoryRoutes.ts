@@ -10,8 +10,8 @@ import {
 const router = Router();
 
 //GET /api/stock-histories ADMIN & USER
-router.get("/", authMiddleware, getAllStockHistory);
+router.get("/", getAllStockHistory);
 
-router.get("/:inventoryId", authMiddleware, getStockHistoryByInventoryId);
+router.get("/:inventoryId", getStockHistoryByInventoryId);
 
 export default router;

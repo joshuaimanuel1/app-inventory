@@ -23,7 +23,7 @@ export const registerService = async (email: string, password: string) => {
   return createUser(email, hashed, Role.USER);
 };
 
-// LOGIN USER / ADMIN (same function)
+// LOGIN USER / ADMIN
 export const loginService = async (email: string, password: string) => {
   const user = await findUserByEmail(email);
 

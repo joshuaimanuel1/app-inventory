@@ -19,9 +19,8 @@ export const getAllInventory = async (
 
     //filtering
     const nameFilter = req.query.name as string | undefined;
-    const categoryFilter = req.query.category as string | undefined;
+    const categoryIdFilter = req.query.categoryId as string | undefined;
 
-    //build where clause
     const where: any = {};
 
     if (nameFilter) {
@@ -31,13 +30,8 @@ export const getAllInventory = async (
       };
     }
 
-    if (categoryFilter) {
-      where.category = {
-        name: {
-          contains: categoryFilter,
-          mode: "insensitive",
-        },
-      };
+    if (categoryIdFilter) {
+      where.categoryId = Number(categoryIdFilter);
     }
 
     //fetch data

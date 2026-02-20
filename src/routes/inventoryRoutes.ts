@@ -21,9 +21,9 @@ import {
 const router = Router();
 
 //GET /api/inventory ADMIN & USER
-router.get("/", authMiddleware, getAllInventory);
+router.get("/", getAllInventory);
 
-router.get("/:id", authMiddleware, getInventoryById);
+router.get("/:id", getInventoryById);
 
 //create inventory ADMIN ONLY
 router.post(

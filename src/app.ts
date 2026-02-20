@@ -8,12 +8,19 @@ import stockRoutes from "./routes/stockRoutes";
 import stockHistoryRoutes from "./routes/stockHistoryRoutes";
 import authRoutes from "./routes/authRoutes";
 import adminRoutes from "./routes/adminRoutes";
+import cors from "cors";
 
 const app: Application = express();
 
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  }),
+);
+
 //middlewares
 app.use(express.json());
-
 app.use(logger);
 
 //routes
@@ -28,5 +35,5 @@ app.use("/api/stock-histories", stockHistoryRoutes);
 app.use("/api/auth", authRoutes);
 
 app.use("/api", adminRoutes);
-//export app
+
 export default app;
