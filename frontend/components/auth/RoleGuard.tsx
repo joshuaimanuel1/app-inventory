@@ -1,24 +1,24 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getRole } from "@/src/lib/auth";
 
 interface Props {
   allowed: ("ADMIN" | "USER")[];
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export default function RoleGuard({ allowed, children }: Props) {
-  const [role, setRole] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [isAllowed, setIsAllowed] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    setRole(getRole());
-  }, []);
+    const role = getRole();
+    if (role && allowed.includes(role)) {
+      setIsAllowed(true);
+    }
+  }, [allowed]);
 
-  if (!mounted) return null;
-  if (!role || !allowed.includes(role as any)) return null;
+  if (!isAllowed) return null;
 
   return <>{children}</>;
 }

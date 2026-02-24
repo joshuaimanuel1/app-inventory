@@ -2,52 +2,101 @@
 
 import { useState } from "react";
 import { getToken } from "@/src/lib/auth";
+import { useRouter } from "next/navigation";
 
 interface Props {
-  type: "create" | "delete";
+  type: "create" | "update" | "delete";
   id?: number;
+  defaultData?: {
+    name: string;
+    description: string;
+    categoryId: number;
+  };
 }
 
-export default function InventoryActions({ type, id }: Props) {
+export default function InventoryActions({ type, id, defaultData }: Props) {
   const token = getToken();
+  const router = useRouter();
+
+  const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
-    name: "",
-    description: "",
-    categoryId: "",
+    name: defaultData?.name || "",
+    description: defaultData?.description || "",
+    categoryId: defaultData?.categoryId?.toString() || "",
     initialStock: "",
   });
 
   const handleCreate = async () => {
     if (!form.name.trim()) return;
 
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/inventories`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        ...form,
-        categoryId: Number(form.categoryId),
-        initialStock: Number(form.initialStock),
-      }),
-    });
+    try {
+      setLoading(true);
 
-    window.location.reload();
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/inventories`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: form.name,
+            description: form.description,
+            categoryId: Number(form.categoryId),
+            initialStock: Number(form.initialStock),
+          }),
+        },
+      );
+
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.message || "Create failed");
+        return;
+      }
+
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = async () => {
     if (!id) return;
 
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/inventories/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const confirmDelete = confirm("Are you sure?");
+    if (!confirmDelete) return;
 
-    window.location.reload();
+    try {
+      setLoading(true);
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/inventories/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.message || "Delete failed");
+        return;
+      }
+
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (type === "create") {
@@ -75,17 +124,22 @@ export default function InventoryActions({ type, id }: Props) {
         />
         <button
           onClick={handleCreate}
-          className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-md text-sm hover:from-blue-600 hover:to-indigo-700 transition duration-200 ease-in-out shadow-md"
+          disabled={loading}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
         >
-          Create
+          {loading ? "Creating..." : "Create"}
         </button>
       </div>
     );
   }
 
   return (
-    <button onClick={handleDelete} className="text-red-500 text-sm mt-2">
-      Delete
+    <button
+      onClick={handleDelete}
+      disabled={loading}
+      className="text-red-500 text-sm mt-2 hover:text-red-400 disabled:opacity-50"
+    >
+      {loading ? "Deleting..." : "Delete"}
     </button>
   );
 }

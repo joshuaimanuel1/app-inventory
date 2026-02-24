@@ -1,3 +1,5 @@
+import { StockHistory } from "./stockHistory";
+
 export interface Inventory {
   id: number;
   name: string;
@@ -8,4 +10,8 @@ export interface Inventory {
     id: number;
     name: string;
   };
+}
+
+export interface InventoryDetail extends Inventory {
+  histories: StockHistory[];
 }

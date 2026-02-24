@@ -75,23 +75,41 @@ export default async function StockHistoriesPage({ searchParams }: Props) {
 
       {/* pagination */}
       {meta && meta.totalPages > 1 && (
-        <div className="flex gap-4 mt-8">
-          {meta.page > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-10">
+          {meta.page > 1 ? (
             <Link
               href={buildPageLink(meta.page - 1)}
-              className="px-4 py-2 bg-zinc-700 text-white rounded hover:bg-zinc-600 transition"
+              className="px-4 py-2 bg-gray-800 rounded hover:bg-gray-700 transition"
             >
               Previous
             </Link>
+          ) : (
+            <button
+              disabled
+              className="px-4 py-2 bg-gray-800 rounded opacity-40 cursor-not-allowed"
+            >
+              Previous
+            </button>
           )}
 
-          {meta.page < meta.totalPages && (
+          <span className="text-gray-400">
+            Page {meta.page} of {meta.totalPages}
+          </span>
+
+          {meta.page < meta.totalPages ? (
             <Link
               href={buildPageLink(meta.page + 1)}
-              className="px-4 py-2 bg-zinc-700 text-white rounded hover:bg-zinc-600 transition"
+              className="px-4 py-2 bg-gray-800 rounded hover:bg-gray-700 transition"
             >
               Next
             </Link>
+          ) : (
+            <button
+              disabled
+              className="px-4 py-2 bg-gray-800 rounded opacity-40 cursor-not-allowed"
+            >
+              Next
+            </button>
           )}
         </div>
       )}

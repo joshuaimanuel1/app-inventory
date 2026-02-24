@@ -30,7 +30,7 @@ router.post(
   "/",
   authMiddleware,
   roleMiddleware(Role.ADMIN),
-  validate(createCategorySchema),
+  // validate(createCategorySchema),
   createCategory,
 );
 

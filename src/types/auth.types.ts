@@ -1,5 +1,9 @@
-export interface JwtPayload {
-  userId: number;
-  email: string;
-  role: "ADMIN" | "USER";
+import { Request } from "express";
+
+export interface AuthRequest extends Request {
+  user?: {
+    id: number;
+    email: string;
+    role: string;
+  };
 }

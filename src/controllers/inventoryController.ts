@@ -9,13 +9,23 @@ export const getAllInventory = async (
 ): Promise<Response> => {
   try {
     //pagination
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 50);
     const skip = (page - 1) * limit;
 
     //sorting
-    const sortField = (req.query.sort as string) || "id";
-    const sortOrder = (req.query.order as "asc" | "desc") || "asc";
+    const allowedSortFields = ["id", "name", "stock", "createdAt", "category"];
+
+    const requestedSort = req.query.sort as string;
+
+    const sortField = allowedSortFields.includes(requestedSort)
+      ? requestedSort
+      : "id";
+
+    const sortOrder =
+      req.query.order === "desc" || req.query.order === "asc"
+        ? (req.query.order as "asc" | "desc")
+        : "asc";
 
     //filtering
     const nameFilter = req.query.name as string | undefined;
@@ -30,8 +40,26 @@ export const getAllInventory = async (
       };
     }
 
-    if (categoryIdFilter) {
+    if (categoryIdFilter && !isNaN(Number(categoryIdFilter))) {
       where.categoryId = Number(categoryIdFilter);
+    }
+
+    let orderBy: any;
+
+    if (sortField === "category") {
+      orderBy = [
+        {
+          category: {
+            name: sortOrder,
+          },
+        },
+        { id: "asc" }, // secondary sort for stability
+      ];
+    } else {
+      orderBy = [
+        { [sortField]: sortOrder },
+        { id: "asc" }, // secondary sort
+      ];
     }
 
     //fetch data
@@ -40,16 +68,7 @@ export const getAllInventory = async (
       include: {
         category: true,
       },
-      orderBy:
-        sortField === "category"
-          ? {
-              category: {
-                name: sortOrder,
-              },
-            }
-          : {
-              [sortField]: sortOrder,
-            },
+      orderBy,
       skip,
       take: limit,
     });
