@@ -82,12 +82,15 @@ export default function CategoryEditModal({ id, defaultName }: Props) {
 
       router.refresh();
     } catch (error: any) {
-      // console.error(error);
-      // const errorMessage =
-      //   error instanceof Error ? error.message : "Failed to update category";
-      // toast.error("Error", {
-      //   description: errorMessage,
-      // });
+      console.error(error);
+
+      //tankap error dari backend
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to update category";
+
+      toast.error("Error", {
+        description: errorMessage,
+      });
     }
   }
 
