@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { apiFetch } from "@/src/lib/api";
 
 import { useForm } from "react-hook-form";
@@ -29,7 +30,7 @@ import { Button } from "@/components/ui/button";
 
 import { toast } from "sonner";
 
-//schema
+// schema
 const schema = z.object({
   name: z
     .string()
@@ -45,6 +46,7 @@ interface Props {
 }
 
 export default function CategoryCreateModal({ onSuccess }: Props) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
 
   const form = useForm<FormValues>({
@@ -56,14 +58,14 @@ export default function CategoryCreateModal({ onSuccess }: Props) {
 
   const loading = form.formState.isSubmitting;
 
-  //reset form when modal opens
+  // reset form when modal opens
   useEffect(() => {
     if (open) {
       form.reset({ name: "" });
     }
-  }, [open]);
+  }, [open, form]);
 
-  //submit
+  // submit
   async function onSubmit(values: FormValues) {
     try {
       await apiFetch("/api/categories", {
@@ -71,17 +73,25 @@ export default function CategoryCreateModal({ onSuccess }: Props) {
         body: JSON.stringify(values),
       });
 
-      toast.success("Category created successfully");
+      toast.success("Success", {
+        description: "Category created successfully",
+      });
 
       setOpen(false);
 
       onSuccess?.();
 
-      window.location.reload();
-    } catch (error) {
+      router.refresh();
+    } catch (error: any) {
       console.error(error);
 
-      toast.error("Failed to create category");
+      //tangkap error dari backedn ambil properti message jika ada
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create category";
+
+      toast.error("Error", {
+        description: errorMessage,
+      });
     }
   }
 

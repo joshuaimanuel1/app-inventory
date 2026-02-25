@@ -35,12 +35,7 @@ export default function StockHistoryFilter() {
 
   const [endDate, setEndDate] = useState(searchParams.get("endDate") || "");
 
-  /*
-  |--------------------------------------------------------------------------
-  | FETCH INVENTORIES — FIXED VERSION
-  |--------------------------------------------------------------------------
-  */
-
+  //fetch inventory
   useEffect(() => {
     fetchInventories();
   }, []);
@@ -53,11 +48,6 @@ export default function StockHistoryFilter() {
       );
 
       const result = await res.json();
-
-      /*
-      IMPORTANT FIX:
-      result.data.data is the array
-      */
 
       const inventoryArray = result?.data?.data;
 
@@ -73,12 +63,6 @@ export default function StockHistoryFilter() {
     }
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | FILTER TYPE
-  |--------------------------------------------------------------------------
-  */
-
   function handleTypeChange(value: string) {
     const params = new URLSearchParams(searchParams.toString());
 
@@ -90,12 +74,7 @@ export default function StockHistoryFilter() {
     router.push(`/stock-histories?${params.toString()}`);
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | APPLY FILTERS
-  |--------------------------------------------------------------------------
-  */
-
+  //apply filter
   function applyFilters() {
     const params = new URLSearchParams(searchParams.toString());
 

@@ -29,7 +29,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-//schema
+// schema
 const schema = z.object({
   name: z
     .string()
@@ -65,7 +65,7 @@ export default function CategoryEditModal({ id, defaultName }: Props) {
         name: defaultName,
       });
     }
-  }, [open]);
+  }, [open, defaultName, form]);
 
   async function onSubmit(values: FormValues) {
     try {
@@ -74,13 +74,23 @@ export default function CategoryEditModal({ id, defaultName }: Props) {
         body: JSON.stringify(values),
       });
 
-      toast.success("Category updated successfully");
+      toast.success("Success", {
+        description: "Category updated successfully",
+      });
 
       setOpen(false);
 
       router.refresh();
-    } catch {
-      toast.error("Failed to update category");
+    } catch (error: any) {
+      console.error(error);
+
+      //tankap error dari backend
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to update category";
+
+      toast.error("Error", {
+        description: errorMessage,
+      });
     }
   }
 

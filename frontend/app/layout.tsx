@@ -1,8 +1,7 @@
 import "./globals.css";
 
 import Navbar from "@/components/ui/Navbar";
-
-import ToasterProvider from "@/components/providers/ToasterProvider";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata = {
   title: "Inventory App",
@@ -15,16 +14,32 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="bg-gray-950 text-gray-100 min-h-screen antialiased">
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className="
+          min-h-screen
+          bg-background
+          text-foreground
+          antialiased
+        "
+      >
         {/* Navbar */}
         <Navbar />
 
         {/* Main Content */}
-        <main className="max-w-6xl mx-auto px-6 py-10">{children}</main>
+        <main
+          className="
+            max-w-7xl
+            mx-auto
+            px-6
+            py-10
+          "
+        >
+          {children}
+        </main>
 
-        {/* Toast Provider */}
-        <ToasterProvider />
+        {/* 3. Pasang Toaster premium kita di sini */}
+        <Toaster />
       </body>
     </html>
   );

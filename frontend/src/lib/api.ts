@@ -20,7 +20,19 @@ export async function apiFetch<T>(
   });
 
   if (!res.ok) {
-    throw new Error(`API Error: ${res.status}`);
+    //siapkan pesan default (fallback)
+    let errorMessage = `API Error: ${res.status}`;
+
+    try {
+      //ambil detail error dari backend (contoh: { success: false, message: "Category already exists" })
+      const errorData = await res.json();
+
+      if (errorData && errorData.message) {
+        errorMessage = errorData.message;
+      }
+    } catch (parseError) {}
+
+    throw new Error(errorMessage);
   }
 
   return res.json();

@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+
 interface CardProps {
   children: React.ReactNode;
   className?: string;
@@ -6,7 +8,24 @@ interface CardProps {
 export default function Card({ children, className }: CardProps) {
   return (
     <div
-      className={`p-6 rounded-xl border border-gray-800 bg-gray-900 hover:border-blue-500 hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] transition-all duration-300 ${className || ""}`}
+      className={cn(
+        `
+        rounded-xl border
+        border-border
+        bg-card
+        text-card-foreground
+
+        shadow-sm
+        transition-all duration-200
+
+        hover:border-primary/40
+        hover:shadow-md
+        hover:-translate-y-px
+
+        p-6
+        `,
+        className,
+      )}
     >
       {children}
     </div>

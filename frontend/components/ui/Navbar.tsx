@@ -6,63 +6,79 @@ import { getToken, logout } from "@/src/lib/auth";
 import { useRouter, usePathname } from "next/navigation";
 import RoleGuard from "../auth/RoleGuard";
 
+import { cn } from "@/lib/utils";
+
 export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   const router = useRouter();
-  const pathname = usePathname(); //trigger on route change
+  const pathname = usePathname();
 
   useEffect(() => {
     setIsLoggedIn(!!getToken());
-  }, [pathname]); //setiap pindah halaman, cek ulang
+  }, [pathname]);
 
-  const handleLogout = () => {
+  function handleLogout() {
     logout();
     setIsLoggedIn(false);
+
     router.replace("/login");
-    router.refresh(); //force re-render
-  };
+    router.refresh();
+  }
+
+  function navLink(href: string, label: string) {
+    const active = pathname === href;
+
+    return (
+      <Link
+        href={href}
+        className={cn(
+          "text-sm font-medium transition-colors duration-200",
+          active
+            ? "text-primary"
+            : "text-muted-foreground hover:text-foreground",
+        )}
+      >
+        {label}
+      </Link>
+    );
+  }
 
   return (
-    <nav className="border-b border-gray-800 bg-gray-900">
-      <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-        <Link href="/" className="text-xl font-bold">
+    <nav className="sticky top-0 z-50 w-full border-b border-border bg-card/80 backdrop-blur">
+      <div className="container mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
+        {/* Logo */}
+        <Link
+          href="/"
+          className="text-lg font-semibold text-foreground hover:text-primary transition-colors"
+        >
           Inventory App
         </Link>
 
-        <div className="flex gap-6 text-sm items-center">
+        {/* Navigation */}
+        <div className="flex items-center gap-6">
           {isLoggedIn ? (
             <>
-              <Link href="/categories" className="hover:text-blue-400">
-                Categories
-              </Link>
-              <Link href="/inventories" className="hover:text-blue-400">
-                Inventories
-              </Link>
-              <Link href="/stock-histories" className="hover:text-blue-400">
-                Stock Histories
-              </Link>
+              {navLink("/categories", "Categories")}
+              {navLink("/inventories", "Inventories")}
+              {navLink("/stock-histories", "Stock Histories")}
 
               <RoleGuard allowed={["ADMIN"]}>
-                <Link href="/admin" className="hover:text-blue-400">
-                  Admin Panel
-                </Link>
+                {navLink("/admin", "Admin Panel")}
               </RoleGuard>
 
+              {/* Logout */}
               <button
                 onClick={handleLogout}
-                className="text-red-400 hover:text-red-300"
+                className="text-sm font-medium text-destructive hover:text-destructive/80 transition-colors"
               >
                 Logout
               </button>
             </>
           ) : (
             <>
-              <Link href="/login" className="hover:text-blue-400">
-                Login
-              </Link>
-              <Link href="/register" className="hover:text-blue-400">
-                Register
-              </Link>
+              {navLink("/login", "Login")}
+              {navLink("/register", "Register")}
             </>
           )}
         </div>
