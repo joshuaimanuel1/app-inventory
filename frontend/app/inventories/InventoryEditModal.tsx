@@ -74,6 +74,7 @@ export default function InventoryEditModal({ id, defaultData }: Props) {
     },
   });
 
+  //fetch cartegoris
   const fetchCategories = useCallback(async () => {
     try {
       const res = await apiFetch<{ data: Category[] }>("/api/categories");

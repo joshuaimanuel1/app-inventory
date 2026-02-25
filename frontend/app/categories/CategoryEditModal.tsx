@@ -29,7 +29,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-// schema
+//schema
 const schema = z.object({
   name: z
     .string()
@@ -101,6 +101,7 @@ export default function CategoryEditModal({ id, defaultName }: Props) {
           className="absolute top-3 right-3 p-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/25 hover:text-blue-300 transition-all duration-200"
           aria-label="Edit Category"
         >
+          {/* jangan lupa ganti nanti */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
