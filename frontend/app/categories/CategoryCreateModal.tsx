@@ -83,15 +83,13 @@ export default function CategoryCreateModal({ onSuccess }: Props) {
 
       router.refresh();
     } catch (error: any) {
-      console.error(error);
-
-      //tangkap error dari backedn ambil properti message jika ada
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to create category";
-
-      toast.error("Error", {
-        description: errorMessage,
-      });
+      // console.error(error);
+      // //tangkap error dari backedn ambil properti message jika ada
+      // const errorMessage =
+      //   error instanceof Error ? error.message : "Failed to create category";
+      // toast.error("Error", {
+      //   description: errorMessage,
+      // });
     }
   }
 
