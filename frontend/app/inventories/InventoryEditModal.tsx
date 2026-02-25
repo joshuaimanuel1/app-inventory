@@ -30,12 +30,6 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-/*
-|--------------------------------------------------------------------------
-| Types
-|--------------------------------------------------------------------------
-*/
-
 interface Category {
   id: number;
   name: string;
@@ -50,12 +44,7 @@ interface Props {
   };
 }
 
-/*
-|--------------------------------------------------------------------------
-| Validation Schema
-|--------------------------------------------------------------------------
-*/
-
+//validation schema
 const schema = z.object({
   name: z
     .string()
@@ -69,24 +58,12 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-/*
-|--------------------------------------------------------------------------
-| Component
-|--------------------------------------------------------------------------
-*/
-
 export default function InventoryEditModal({ id, defaultData }: Props) {
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
-
-  /*
-  |--------------------------------------------------------------------------
-  | React Hook Form
-  |--------------------------------------------------------------------------
-  */
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -96,12 +73,6 @@ export default function InventoryEditModal({ id, defaultData }: Props) {
       categoryId: 0,
     },
   });
-
-  /*
-  |--------------------------------------------------------------------------
-  | Load categories
-  |--------------------------------------------------------------------------
-  */
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -114,12 +85,6 @@ export default function InventoryEditModal({ id, defaultData }: Props) {
     }
   }, []);
 
-  /*
-  |--------------------------------------------------------------------------
-  | Reset form WHEN modal opens ONLY
-  |--------------------------------------------------------------------------
-  */
-
   useEffect(() => {
     if (!open) return;
 
@@ -131,12 +96,6 @@ export default function InventoryEditModal({ id, defaultData }: Props) {
       categoryId: defaultData.categoryId,
     });
   }, [open, defaultData, fetchCategories, form]);
-
-  /*
-  |--------------------------------------------------------------------------
-  | Submit
-  |--------------------------------------------------------------------------
-  */
 
   const onSubmit = async (values: FormValues) => {
     try {
@@ -161,15 +120,8 @@ export default function InventoryEditModal({ id, defaultData }: Props) {
     }
   };
 
-  /*
-  |--------------------------------------------------------------------------
-  | Render
-  |--------------------------------------------------------------------------
-  */
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {/* EDIT BUTTON (KEEP YOUR DESIGN) */}
       <DialogTrigger asChild>
         <button
           className="absolute top-3 right-3 p-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/25 hover:text-blue-300 transition-all duration-200"
@@ -192,14 +144,13 @@ export default function InventoryEditModal({ id, defaultData }: Props) {
         </button>
       </DialogTrigger>
 
-      {/* MODAL */}
+      {/* modal */}
       <DialogContent className="sm:max-w-md bg-gray-900 border-gray-800">
         <DialogHeader>
           <DialogTitle>Edit Inventory</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* NAME */}
           <div className="space-y-1">
             <Label>Inventory Name</Label>
 
@@ -215,7 +166,6 @@ export default function InventoryEditModal({ id, defaultData }: Props) {
             )}
           </div>
 
-          {/* DESCRIPTION */}
           <div className="space-y-1">
             <Label>Description</Label>
 
@@ -231,7 +181,6 @@ export default function InventoryEditModal({ id, defaultData }: Props) {
             )}
           </div>
 
-          {/* CATEGORY */}
           <div className="space-y-1">
             <Label>Category</Label>
 
@@ -265,7 +214,6 @@ export default function InventoryEditModal({ id, defaultData }: Props) {
             )}
           </div>
 
-          {/* BUTTON */}
           <Button type="submit" disabled={loading} className="w-full">
             {loading ? "Saving..." : "Save Changes"}
           </Button>
