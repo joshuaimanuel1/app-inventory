@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { apiFetch } from "@/src/lib/api";
-import { toast } from "sonner";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 import {
   Dialog,
@@ -22,12 +24,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 
 //schema
 const schema = z.object({
@@ -41,76 +41,59 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 interface Props {
-  id: number;
-  defaultName: string;
+  onSuccess?: () => void;
 }
 
-export default function CategoryEditModal({ id, defaultName }: Props) {
-  const router = useRouter();
-
+export default function CategoryCreateModal({ onSuccess }: Props) {
   const [open, setOpen] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: defaultName,
+      name: "",
     },
   });
 
   const loading = form.formState.isSubmitting;
 
+  //reset form when modal opens
   useEffect(() => {
     if (open) {
-      form.reset({
-        name: defaultName,
-      });
+      form.reset({ name: "" });
     }
   }, [open]);
 
+  //submit
   async function onSubmit(values: FormValues) {
     try {
-      await apiFetch(`/api/categories/${id}`, {
-        method: "PUT",
+      await apiFetch("/api/categories", {
+        method: "POST",
         body: JSON.stringify(values),
       });
 
-      toast.success("Category updated successfully");
+      toast.success("Category created successfully");
 
       setOpen(false);
 
-      router.refresh();
-    } catch {
-      toast.error("Failed to update category");
+      onSuccess?.();
+
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+
+      toast.error("Failed to create category");
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button
-          className="absolute top-3 right-3 p-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/25 hover:text-blue-300 transition-all duration-200"
-          aria-label="Edit Category"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-            <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-          </svg>
-        </button>
+        <Button>+ Create Category</Button>
       </DialogTrigger>
 
       <DialogContent className="bg-gray-900 border-gray-800">
         <DialogHeader>
-          <DialogTitle>Edit Category</DialogTitle>
+          <DialogTitle>Create Category</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -123,7 +106,7 @@ export default function CategoryEditModal({ id, defaultName }: Props) {
                   <FormLabel>Category Name</FormLabel>
 
                   <FormControl>
-                    <Input {...field} />
+                    <Input placeholder="Electronics" {...field} />
                   </FormControl>
 
                   <FormMessage />
@@ -132,7 +115,7 @@ export default function CategoryEditModal({ id, defaultName }: Props) {
             />
 
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? "Updating..." : "Save Changes"}
+              {loading ? "Creating..." : "Create Category"}
             </Button>
           </form>
         </Form>

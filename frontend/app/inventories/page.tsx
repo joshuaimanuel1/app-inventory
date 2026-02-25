@@ -1,9 +1,12 @@
 import { Inventory } from "@/src/lib/types/inventory";
 import Card from "@/components/ui/Card";
 import Link from "next/link";
-import InventoryActions from "./InventoryActions";
+
+import InventoryCreateModal from "./InventoryCreateModal";
 import InventoryEditModal from "./InventoryEditModal";
+import InventoryActions from "./InventoryActions";
 import StockActions from "./StockActions";
+
 import RoleGuard from "@/components/auth/RoleGuard";
 
 interface PageProps {
@@ -27,6 +30,7 @@ interface InventoryResponse {
   };
 }
 
+//fetch inventories
 async function getInventories(
   params: Record<string, string | undefined>,
 ): Promise<InventoryResponse> {
@@ -38,7 +42,9 @@ async function getInventories(
 
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/api/inventories?${query.toString()}`,
-    { cache: "no-store" },
+    {
+      cache: "no-store",
+    },
   );
 
   if (!res.ok) {
@@ -46,9 +52,16 @@ async function getInventories(
   }
 
   const result = await res.json();
+
   return result.data;
 }
 
+/*
+|--------------------------------------------------------------------------
+| Page Component
+|--------------------------------------------------------------------------
+*/
+//page component
 export default async function InventoriesPage({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
 
@@ -59,15 +72,18 @@ export default async function InventoriesPage({ searchParams }: PageProps) {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8">All Inventories</h1>
+      {/* header */}
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">All Inventories</h1>
 
-      <RoleGuard allowed={["ADMIN"]}>
-        <InventoryActions type="create" />
-      </RoleGuard>
+        <RoleGuard allowed={["ADMIN"]}>
+          <InventoryCreateModal />
+        </RoleGuard>
+      </div>
 
       {/* filter & sort */}
       <form method="GET" className="flex flex-wrap gap-4 mb-6 items-center">
-        {/* Search */}
+        {/* search */}
         <input
           name="name"
           placeholder="Search name..."
@@ -75,7 +91,7 @@ export default async function InventoriesPage({ searchParams }: PageProps) {
           className="px-3 py-2 bg-gray-800 border border-gray-700 rounded"
         />
 
-        {/* sort field */}
+        {/* sotr field */}
         <select
           name="sort"
           defaultValue={resolvedParams.sort || "id"}
@@ -87,7 +103,7 @@ export default async function InventoriesPage({ searchParams }: PageProps) {
           <option value="category">Sort by Category</option>
         </select>
 
-        {/* sort order */}
+        {/* order */}
         <select
           name="order"
           defaultValue={resolvedParams.order || "asc"}
@@ -97,20 +113,23 @@ export default async function InventoriesPage({ searchParams }: PageProps) {
           <option value="desc">Descending</option>
         </select>
 
-        {/* reset page to 1 when filtering */}
+        {/* reset page */}
         <input type="hidden" name="page" value="1" />
 
+        {/* apply button */}
         <button
           type="submit"
-          className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-md text-sm hover:from-blue-600 hover:to-indigo-700 transition duration-200 ease-in-out shadow-md"
+          className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-md text-sm hover:from-blue-600 hover:to-indigo-700 transition duration-200 shadow-md"
         >
           Apply
         </button>
       </form>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+      {/* inventory grid */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {inventories.map((item) => (
           <Card key={item.id} className="relative">
+            {/* edit modal */}
             <RoleGuard allowed={["ADMIN"]}>
               <InventoryEditModal
                 id={item.id}
@@ -122,18 +141,23 @@ export default async function InventoriesPage({ searchParams }: PageProps) {
               />
             </RoleGuard>
 
+            {/* name */}
             <h3 className="text-lg font-semibold mb-2">{item.name}</h3>
 
+            {/* description */}
             <p className="text-sm text-gray-400">
               Description: {item.description}
             </p>
 
+            {/* stock */}
             <p className="text-sm text-gray-400">Stock: {item.stock}</p>
 
+            {/* catergory */}
             <p className="text-sm text-blue-400">
               Category: {item.category?.name}
             </p>
 
+            {/* details */}
             <Link
               href={`/inventories/${item.id}`}
               className="text-xs text-gray-500 mt-2 block hover:text-blue-400 transition"
@@ -141,10 +165,12 @@ export default async function InventoriesPage({ searchParams }: PageProps) {
               View Details →
             </Link>
 
+            {/* delete */}
             <RoleGuard allowed={["ADMIN"]}>
               <InventoryActions type="delete" id={item.id} />
             </RoleGuard>
 
+            {/* stock action */}
             <RoleGuard allowed={["ADMIN"]}>
               <StockActions inventoryId={item.id} />
             </RoleGuard>
@@ -158,11 +184,14 @@ export default async function InventoriesPage({ searchParams }: PageProps) {
           <Link
             href={{
               pathname: "/inventories",
-              query: { ...resolvedParams, page: currentPage - 1 },
+              query: {
+                ...resolvedParams,
+                page: currentPage - 1,
+              },
             }}
             className="px-4 py-2 bg-gray-800 rounded hover:bg-gray-700 transition"
           >
-            Previou
+            Previous
           </Link>
         )}
 
@@ -174,7 +203,10 @@ export default async function InventoriesPage({ searchParams }: PageProps) {
           <Link
             href={{
               pathname: "/inventories",
-              query: { ...resolvedParams, page: currentPage + 1 },
+              query: {
+                ...resolvedParams,
+                page: currentPage + 1,
+              },
             }}
             className="px-4 py-2 bg-gray-800 rounded hover:bg-gray-700 transition"
           >

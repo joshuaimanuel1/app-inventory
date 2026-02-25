@@ -1,8 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { getToken } from "@/src/lib/auth";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
+import { apiFetch } from "@/src/lib/api";
+
+import { Button } from "@/components/ui/button";
+
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 interface Props {
   type: "create" | "update" | "delete";
@@ -11,73 +27,104 @@ interface Props {
 }
 
 export default function CategoryActions({ type, id, defaultName }: Props) {
-  const [name, setName] = useState(defaultName || "");
-  const token = getToken();
   const router = useRouter();
 
+  const [name, setName] = useState(defaultName || "");
+  const [loading, setLoading] = useState(false);
+
+  //create
   const handleCreate = async () => {
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      toast.error("Category name is required");
+      return;
+    }
 
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name }),
-    });
+    try {
+      setLoading(true);
 
-    setName("");
-    router.refresh();
+      await apiFetch("/api/categories", {
+        method: "POST",
+        body: JSON.stringify({ name }),
+      });
+
+      toast.success("Category created");
+
+      setName("");
+
+      router.refresh();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create category");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  //update
   const handleUpdate = async () => {
-    if (!id || !name.trim()) return;
+    if (!id) return;
 
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name }),
-    });
+    if (!name.trim()) {
+      toast.error("Category name is required");
+      return;
+    }
 
-    router.refresh();
+    try {
+      setLoading(true);
+
+      await apiFetch(`/api/categories/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ name }),
+      });
+
+      toast.success("Category updated");
+
+      router.refresh();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update category");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  //delete (with confirmation)
   const handleDelete = async () => {
     if (!id) return;
 
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    try {
+      setLoading(true);
 
-    router.refresh();
+      await apiFetch(`/api/categories/${id}`, {
+        method: "DELETE",
+      });
+
+      toast.success("Category deleted");
+
+      router.refresh();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete category");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (type === "create") {
     return (
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-3 mb-6">
         <input
           value={name}
-          placeholder="New Category"
+          placeholder="New category name..."
           onChange={(e) => setName(e.target.value)}
-          className="px-3 py-2 bg-gray-800 border border-gray-700 rounded"
+          className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-sm focus:outline-none focus:border-blue-500"
         />
-        <button
-          onClick={handleCreate}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Create
-        </button>
+
+        <Button onClick={handleCreate} disabled={loading}>
+          {loading ? "Creating..." : "Create"}
+        </Button>
       </div>
     );
   }
 
+  //update
   if (type === "update") {
     return (
       <div className="flex gap-2 mt-2">
@@ -86,22 +133,46 @@ export default function CategoryActions({ type, id, defaultName }: Props) {
           onChange={(e) => setName(e.target.value)}
           className="px-2 py-1 bg-gray-800 border border-gray-700 rounded text-sm"
         />
-        <button
-          onClick={handleUpdate}
-          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-7000"
-        >
-          Update
-        </button>
+
+        <Button onClick={handleUpdate} disabled={loading} size="sm">
+          {loading ? "Updating..." : "Update"}
+        </Button>
       </div>
     );
   }
 
+  //delete (with conformation dialog)
   return (
-    <button
-      onClick={handleDelete}
-      className="text-red-500 text-sm mt-2 hover:text-red-400"
-    >
-      Delete
-    </button>
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <button className="text-red-500 text-sm mt-2 hover:text-red-400 transition">
+          Delete
+        </button>
+      </AlertDialogTrigger>
+
+      <AlertDialogContent className="bg-gray-900 border-gray-800">
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Category?</AlertDialogTitle>
+
+          <AlertDialogDescription>
+            This action cannot be undone.
+            <br />
+            This will permanently delete this category.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={loading}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            {loading ? "Deleting..." : "Delete"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

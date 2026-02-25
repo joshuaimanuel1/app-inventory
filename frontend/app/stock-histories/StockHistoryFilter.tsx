@@ -1,19 +1,33 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 
-import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+
+interface Inventory {
+  id: number;
+  name: string;
+}
 
 export default function StockHistoryFilter() {
   const router = useRouter();
-
   const searchParams = useSearchParams();
 
   const currentType = searchParams.get("type") || "";
+  const currentInventoryId = searchParams.get("inventoryId") || "";
 
-  const [inventoryId, setInventoryId] = useState(
-    searchParams.get("inventoryId") || "",
-  );
+  const [inventories, setInventories] = useState<Inventory[]>([]);
+  const [inventoryId, setInventoryId] = useState(currentInventoryId);
 
   const [startDate, setStartDate] = useState(
     searchParams.get("startDate") || "",
@@ -21,7 +35,51 @@ export default function StockHistoryFilter() {
 
   const [endDate, setEndDate] = useState(searchParams.get("endDate") || "");
 
-  const handleTypeChange = (value: string) => {
+  /*
+  |--------------------------------------------------------------------------
+  | FETCH INVENTORIES — FIXED VERSION
+  |--------------------------------------------------------------------------
+  */
+
+  useEffect(() => {
+    fetchInventories();
+  }, []);
+
+  async function fetchInventories() {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/inventories?limit=1000`,
+        { cache: "no-store" },
+      );
+
+      const result = await res.json();
+
+      /*
+      IMPORTANT FIX:
+      result.data.data is the array
+      */
+
+      const inventoryArray = result?.data?.data;
+
+      if (Array.isArray(inventoryArray)) {
+        setInventories(inventoryArray);
+      } else {
+        console.error("Inventory data is not array:", result);
+        setInventories([]);
+      }
+    } catch (err) {
+      console.error("Failed fetch inventories:", err);
+      setInventories([]);
+    }
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | FILTER TYPE
+  |--------------------------------------------------------------------------
+  */
+
+  function handleTypeChange(value: string) {
     const params = new URLSearchParams(searchParams.toString());
 
     if (value) params.set("type", value);
@@ -30,9 +88,15 @@ export default function StockHistoryFilter() {
     params.set("page", "1");
 
     router.push(`/stock-histories?${params.toString()}`);
-  };
+  }
 
-  const applyFilters = () => {
+  /*
+  |--------------------------------------------------------------------------
+  | APPLY FILTERS
+  |--------------------------------------------------------------------------
+  */
+
+  function applyFilters() {
     const params = new URLSearchParams(searchParams.toString());
 
     if (inventoryId) params.set("inventoryId", inventoryId);
@@ -47,20 +111,17 @@ export default function StockHistoryFilter() {
     params.set("page", "1");
 
     router.push(`/stock-histories?${params.toString()}`);
-  };
+  }
 
   const filterOptions = [
     { label: "All History", value: "" },
-
     { label: "Stock In (+)", value: "INCREMENT" },
-
     { label: "Stock Out (-)", value: "DECREMENT" },
   ];
 
   return (
     <div className="flex flex-col gap-4 bg-gray-900 p-4 rounded-xl border border-gray-800">
-      {/* filter type */}
-
+      {/* TYPE FILTER */}
       <div className="inline-flex items-center gap-1 bg-gray-950 p-1.5 rounded-lg border border-gray-800 self-start">
         {filterOptions.map((option) => {
           const isActive = currentType === option.value;
@@ -69,9 +130,9 @@ export default function StockHistoryFilter() {
             <button
               key={option.value}
               onClick={() => handleTypeChange(option.value)}
-              className={`px-5 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+              className={`px-5 py-2 rounded-md text-sm font-medium transition ${
                 isActive
-                  ? "bg-blue-600 text-white shadow-md"
+                  ? "bg-blue-600 text-white"
                   : "text-gray-400 hover:text-gray-200 hover:bg-gray-800"
               }`}
             >
@@ -81,53 +142,51 @@ export default function StockHistoryFilter() {
         })}
       </div>
 
-      {/* flter lainnya (date range & inventoryId */}
-
+      {/* other filters */}
       <div className="flex flex-wrap items-end gap-4">
-        <div>
-          <label className="block text-xs text-gray-400 mb-1">
-            Inventory ID
-          </label>
+        {/* invnetory select */}
+        <div className="space-y-1">
+          <Label>Inventory</Label>
 
-          <input
-            type="number"
-            placeholder="e.g. 5"
-            value={inventoryId}
-            onChange={(e) => setInventoryId(e.target.value)}
-            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white text-sm focus:outline-none focus:border-blue-500"
-          />
+          <Select value={inventoryId} onValueChange={setInventoryId}>
+            <SelectTrigger className="w-[220px]">
+              <SelectValue placeholder="Select inventory" />
+            </SelectTrigger>
+
+            <SelectContent>
+              {inventories.map((inv) => (
+                <SelectItem key={inv.id} value={String(inv.id)}>
+                  {inv.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        <div>
-          <label className="block text-xs text-slate-300 mb-1 font-medium tracking-wide">
-            Start Date
-          </label>
-          <input
+        {/* start date */}
+        <div className="space-y-1">
+          <Label>Start Date</Label>
+
+          <Input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="px-3 py-2 bg-slate-800 border border-slate-600 rounded-md text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 scheme-dark transition-colors cursor-pointer"
           />
         </div>
 
-        <div>
-          <label className="block text-xs text-slate-300 mb-1 font-medium tracking-wide">
-            End Date
-          </label>
-          <input
+        {/* end date */}
+        <div className="space-y-1">
+          <Label>End Date</Label>
+
+          <Input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="px-3 py-2 bg-slate-800 border border-slate-600 rounded-md text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 scheme-dark transition-colors cursor-pointer"
           />
         </div>
 
-        <button
-          onClick={applyFilters}
-          className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-md text-sm hover:from-blue-600 hover:to-indigo-700 transition duration-200 ease-in-out shadow-md"
-        >
-          Apply Filters
-        </button>
+        {/* apply button */}
+        <Button onClick={applyFilters}>Apply Filters</Button>
       </div>
     </div>
   );
