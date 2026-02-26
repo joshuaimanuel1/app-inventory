@@ -18,23 +18,15 @@ export default function RootLayout({
       <body
         className="
           min-h-screen
-          bg-background
-          text-foreground
+          bg-[#0B0F19] 
+          text-gray-100
           antialiased
+          overflow-x-hidden 
+          flex flex-col
         "
       >
-        {/* Navbar */}
         <Navbar />
-
-        {/* Main Content */}
-        <main
-          className="
-            max-w-7xl
-            mx-auto
-            px-6
-            py-10
-          "
-        >
+        <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 flex flex-col">
           {children}
         </main>
         <Toaster />

@@ -79,9 +79,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[80vh] px-4">
-      {/* Container utama */}
-      <div className="bg-[#0B0F19] p-8 sm:p-10 rounded-2xl shadow-xl w-full max-w-md border border-gray-800">
+    <div className="relative flex items-center justify-center min-h-[80vh] px-4 w-full">
+      <div className="absolute top-0 left-0 md:-left-20 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-blue-600/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 md:-right-20 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-indigo-600/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
+
+      <div className="relative z-10 bg-[#0B0F19] p-8 sm:p-10 rounded-2xl shadow-xl w-full max-w-md border border-gray-800">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-white mb-2">Register</h1>
           <p className="text-gray-400 text-sm">

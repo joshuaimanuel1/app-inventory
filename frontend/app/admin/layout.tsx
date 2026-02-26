@@ -60,8 +60,7 @@ export default function AdminLayout({
 
   return (
     <RoleGuard allowed={["ADMIN"]}>
-      <div className="flex flex-col md:flex-row max-w-7xl mx-auto py-8 px-4 sm:px-6 gap-8 min-h-[calc(100vh-80px)]">
-        {/* SIDEBAR: Floating design */}
+      <div className="flex flex-col md:flex-row gap-8 w-full min-h-[calc(100vh-120px)]">
         <aside className="w-full md:w-64 shrink-0">
           <Link href="/admin" className="block mb-6 px-3 group">
             <h2 className="text-xs font-bold text-gray-500 group-hover:text-gray-300 uppercase tracking-wider transition-colors">

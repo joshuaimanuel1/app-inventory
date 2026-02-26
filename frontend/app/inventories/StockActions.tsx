@@ -16,7 +16,7 @@ export default function StockActions({ inventoryId }: Props) {
   const router = useRouter();
 
   const handleStock = async (type: "INCREMENT" | "DECREMENT") => {
-    // Validasi input
+    //validasi input
     if (!amount || Number(amount) <= 0) {
       toast.error("Please enter a valid amount");
       return;

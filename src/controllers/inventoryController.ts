@@ -53,13 +53,10 @@ export const getAllInventory = async (
             name: sortOrder,
           },
         },
-        { id: "asc" }, // secondary sort for stability
+        { id: "asc" },
       ];
     } else {
-      orderBy = [
-        { [sortField]: sortOrder },
-        { id: "asc" }, // secondary sort
-      ];
+      orderBy = [{ [sortField]: sortOrder }, { id: "asc" }];
     }
 
     //fetch data
@@ -158,7 +155,7 @@ export const createInventory = async (
 
     const inventory = await prisma.inventory.create({
       data: {
-        name: name.trim(), //pastikan nama di-trim
+        name: name.trim(),
         description,
         categoryId,
         stock: initialStock || 0,
