@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { saveAuth } from "@/src/lib/auth";
 import Link from "next/link";
 
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
 export default function LoginPage() {
   const router = useRouter();
 
@@ -14,17 +18,27 @@ export default function LoginPage() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
+
+    // 1. buat validasi Kolom Kosong
+    if (!form.email || !form.password) {
+      toast.error("Email dan password wajib diisi");
+      return;
+    }
+
+    // 2. baut validasi Format Email (Regex)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      toast.error(
+        "Masukkan format email yang valid (contoh: user@example.com)",
+      );
+      return;
+    }
 
     try {
-      if (!form.email || !form.password) {
-        throw new Error("Email dan password wajib diisi");
-      }
+      setLoading(true);
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
@@ -41,13 +55,18 @@ export default function LoginPage() {
         throw new Error(data.message || "Login failed");
       }
 
+      // Simpan token
       const token = data.data.accessToken;
       saveAuth(token);
+
+      toast.success("Login berhasil! Memuat dashboard...");
 
       router.replace("/categories");
       router.refresh();
     } catch (err: any) {
-      setError(err.message || "Login gagal");
+      toast.error(
+        err.message || "Login gagal. Periksa kembali email dan password Anda.",
+      );
     } finally {
       setLoading(false);
     }
@@ -55,45 +74,58 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-[80vh] px-4">
-      <div className="bg-[#0d1117] p-8 sm:p-10 rounded-xl shadow-2xl w-full max-w-md border border-gray-800">
-        <h1 className="text-2xl font-bold text-white mb-8">Login</h1>
-
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-md text-sm mb-6">
-            {error}
-          </div>
-        )}
+      <div className="bg-[#0B0F19] p-8 sm:p-10 rounded-2xl shadow-xl w-full max-w-md border border-gray-800">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-white mb-2">Login</h1>
+          <p className="text-gray-400 text-sm">Selamat datang kembali!</p>
+        </div>
 
         <form onSubmit={handleLogin} className="flex flex-col gap-5">
-          <input
-            type="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="w-full bg-transparent border border-gray-600 text-white rounded-md px-4 py-3 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-          />
+          {/* Email */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">
+              Email Address
+            </label>
+            <Input
+              type="email"
+              placeholder="user@example.com"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              className="bg-gray-900 border-gray-700 focus-visible:ring-blue-500 py-6"
+            />
+          </div>
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="w-full bg-transparent border border-gray-600 text-white rounded-md px-4 py-3 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-          />
+          {/* Password */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">
+              Password
+            </label>
+            <Input
+              type="password"
+              placeholder="Masukkan password Anda"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              className="bg-gray-900 border-gray-700 focus-visible:ring-blue-500 py-6"
+            />
+          </div>
 
-          <button
+          {/* Submit Button */}
+          <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 mt-2 rounded-md font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 mt-2 rounded-lg font-medium transition-colors"
           >
             {loading ? "Logging in..." : "Login"}
-          </button>
+          </Button>
         </form>
 
-        <p className="text-center text-sm text-gray-300 mt-8">
+        <p className="text-center text-sm text-gray-400 mt-8">
           Belum punya akun?{" "}
-          <Link href="/register" className="text-blue-500 hover:underline">
-            Register
+          <Link
+            href="/register"
+            className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+          >
+            Register di sini
           </Link>
         </p>
       </div>

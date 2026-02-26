@@ -31,26 +31,26 @@ export default async function CategoriesPage() {
         </RoleGuard>
       </div>
 
-      {/* gird */}
+      {/* grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {categories.map((category) => (
-          <Card key={category.id} className="relative">
-            {/* edit */}
+          <Card key={category.id} className="relative group p-6">
             <RoleGuard allowed={["ADMIN"]}>
-              <CategoryEditModal id={category.id} defaultName={category.name} />
+              <div className="absolute top-3 right-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <CategoryEditModal
+                  id={category.id}
+                  defaultName={category.name}
+                />
+                <CategoryActions type="delete" id={category.id} />
+              </div>
             </RoleGuard>
 
             {/* name */}
             <Link href={`/inventories?categoryId=${category.id}`}>
-              <h3 className="text-lg font-semibold cursor-pointer hover:text-blue-400 transition">
+              <h3 className="text-lg font-semibold cursor-pointer hover:text-blue-400 transition mt-2 pr-16">
                 {category.name}
               </h3>
             </Link>
-
-            {/* delete */}
-            <RoleGuard allowed={["ADMIN"]}>
-              <CategoryActions type="delete" id={category.id} />
-            </RoleGuard>
           </Card>
         ))}
       </div>

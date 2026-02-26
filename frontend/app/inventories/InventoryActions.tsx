@@ -42,7 +42,7 @@ export default function InventoryActions({ type, id, defaultData }: Props) {
     initialStock: "",
   });
 
-  //create inventoty
+  //create inventory
   const handleCreate = async () => {
     if (!form.name.trim()) {
       toast.error("Inventory name is required");
@@ -143,36 +143,57 @@ export default function InventoryActions({ type, id, defaultData }: Props) {
     );
   }
 
-  //delete (with conformation dialog)
+  //delete (with confirmation dialog)
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <button
           disabled={loading}
-          className="text-red-500 text-sm mt-2 hover:text-red-400 transition disabled:opacity-50"
+          className="p-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/25 hover:text-red-300 transition-all duration-200 disabled:opacity-50"
+          aria-label="Delete Inventory"
         >
-          Delete
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 6h18"></path>
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
         </button>
       </AlertDialogTrigger>
 
-      <AlertDialogContent className="bg-gray-900 border-gray-800">
+      <AlertDialogContent className="bg-gray-900 border-gray-800 sm:max-w-md">
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Inventory?</AlertDialogTitle>
+          <AlertDialogTitle className="text-gray-100">
+            Delete Inventory?
+          </AlertDialogTitle>
 
-          <AlertDialogDescription>
+          <AlertDialogDescription className="text-gray-400">
             This action cannot be undone.
             <br />
             This will permanently delete this inventory and its stock history.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogFooter className="mt-4">
+          <AlertDialogCancel className="bg-transparent border border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white font-medium rounded-md transition-colors">
+            Cancel
+          </AlertDialogCancel>
 
           <AlertDialogAction
             onClick={handleDelete}
             disabled={loading}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-red-600 hover:bg-red-700 text-white font-medium rounded-md transition-colors border-0"
           >
             {loading ? "Deleting..." : "Delete"}
           </AlertDialogAction>

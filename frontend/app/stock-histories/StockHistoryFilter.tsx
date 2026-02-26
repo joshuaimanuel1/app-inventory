@@ -128,7 +128,7 @@ export default function StockHistoryFilter() {
           <Label>Inventory</Label>
 
           <Select value={inventoryId} onValueChange={setInventoryId}>
-            <SelectTrigger className="w-[220px]">
+            <SelectTrigger className="w-55">
               <SelectValue placeholder="Select inventory" />
             </SelectTrigger>
 

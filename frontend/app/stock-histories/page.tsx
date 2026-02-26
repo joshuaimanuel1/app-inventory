@@ -3,6 +3,16 @@ import Card from "@/components/ui/Card";
 import StockHistoryFilter from "./StockHistoryFilter";
 import Link from "next/link";
 
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+
 interface Props {
   searchParams: Promise<{
     page?: string;
@@ -48,7 +58,10 @@ export default async function StockHistoriesPage({ searchParams }: Props) {
 
   const { data, meta } = await getStockHistories(resolvedParams);
 
-  function buildPageLink(page: number) {
+  const currentPage = meta.page;
+  const totalPages = meta.totalPages;
+
+  function buildPageLink(page: number | string) {
     const params = new URLSearchParams(
       resolvedParams as Record<string, string>,
     );
@@ -57,6 +70,18 @@ export default async function StockHistoriesPage({ searchParams }: Props) {
 
     return `/stock-histories?${params.toString()}`;
   }
+
+  const getPageNumbers = () => {
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 1) {
+        pages.push(i);
+      } else if (pages[pages.length - 1] !== "...") {
+        pages.push("...");
+      }
+    }
+    return pages;
+  };
 
   return (
     <div>
@@ -75,64 +100,88 @@ export default async function StockHistoriesPage({ searchParams }: Props) {
         )}
 
         {data.map((item) => (
-          <Card key={item.id}>
-            <h3 className="text-lg font-semibold mb-2">
+          <Card key={item.id} className="p-6 flex flex-col h-full">
+            <h3 className="text-lg font-semibold mb-3">
               {item.inventory?.name ?? "Unknown Item"}
             </h3>
 
-            <p className="text-sm text-gray-400">Type: {item.type}</p>
+            <div className="flex-1 space-y-1.5">
+              <p className="text-sm text-gray-400">
+                <span className="font-medium text-gray-300">Type:</span>{" "}
+                <span
+                  className={
+                    item.type === "INCREMENT" ? "text-blue-400" : "text-red-400"
+                  }
+                >
+                  {item.type}
+                </span>
+              </p>
 
-            <p className="text-sm text-gray-400">Amount: {item.amount}</p>
+              <p className="text-sm text-gray-400">
+                <span className="font-medium text-gray-300">Amount:</span>{" "}
+                {item.amount}
+              </p>
 
-            <p className="text-sm text-blue-400">
-              Stock Now: {item.inventory?.stock ?? 0}
-            </p>
+              <p className="text-sm text-indigo-400">
+                <span className="font-medium text-gray-300">Stock Now:</span>{" "}
+                {item.inventory?.stock ?? 0}
+              </p>
+            </div>
 
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-gray-500 mt-4 pt-3 border-t border-gray-800">
               {new Date(item.date).toLocaleString()}
             </p>
           </Card>
         ))}
       </div>
 
-      {/* pagination */}
-      {meta.totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 mt-10">
-          {meta.page > 1 ? (
-            <Link
-              href={buildPageLink(meta.page - 1)}
-              className="px-4 py-2 bg-gray-800 rounded hover:bg-gray-700"
-            >
-              Previous
-            </Link>
-          ) : (
-            <button
-              disabled
-              className="px-4 py-2 bg-gray-800 rounded opacity-40"
-            >
-              Previous
-            </button>
-          )}
+      {totalPages > 0 && (
+        <div className="mt-10 mb-6 flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              {/* Previous Button */}
+              <PaginationItem>
+                <PaginationPrevious
+                  href={currentPage > 1 ? buildPageLink(currentPage - 1) : "#"}
+                  className={
+                    currentPage <= 1 ? "pointer-events-none opacity-50" : ""
+                  }
+                />
+              </PaginationItem>
 
-          <span className="text-gray-400">
-            Page {meta.page} of {meta.totalPages}
-          </span>
+              {/* Page Numbers & Ellipsis */}
+              {getPageNumbers().map((page, index) => (
+                <PaginationItem key={index}>
+                  {page === "..." ? (
+                    <PaginationEllipsis />
+                  ) : (
+                    <PaginationLink
+                      href={buildPageLink(page)}
+                      isActive={currentPage === page}
+                    >
+                      {page}
+                    </PaginationLink>
+                  )}
+                </PaginationItem>
+              ))}
 
-          {meta.page < meta.totalPages ? (
-            <Link
-              href={buildPageLink(meta.page + 1)}
-              className="px-4 py-2 bg-gray-800 rounded hover:bg-gray-700"
-            >
-              Next
-            </Link>
-          ) : (
-            <button
-              disabled
-              className="px-4 py-2 bg-gray-800 rounded opacity-40"
-            >
-              Next
-            </button>
-          )}
+              {/* Next Button */}
+              <PaginationItem>
+                <PaginationNext
+                  href={
+                    currentPage < totalPages
+                      ? buildPageLink(currentPage + 1)
+                      : "#"
+                  }
+                  className={
+                    currentPage >= totalPages
+                      ? "pointer-events-none opacity-50"
+                      : ""
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
       )}
     </div>

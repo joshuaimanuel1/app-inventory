@@ -9,6 +9,16 @@ import StockActions from "./StockActions";
 
 import RoleGuard from "@/components/auth/RoleGuard";
 
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+
 interface PageProps {
   searchParams: Promise<{
     page?: string;
@@ -56,12 +66,6 @@ async function getInventories(
   return result.data;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Page Component
-|--------------------------------------------------------------------------
-*/
-//page component
 export default async function InventoriesPage({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
 
@@ -69,6 +73,26 @@ export default async function InventoriesPage({ searchParams }: PageProps) {
 
   const currentPage = meta.page;
   const totalPages = meta.totalPages;
+
+  const createPageURL = (pageNumber: number | string) => {
+    const params = new URLSearchParams(
+      resolvedParams as Record<string, string>,
+    );
+    params.set("page", pageNumber.toString());
+    return `/inventories?${params.toString()}`;
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 1) {
+        pages.push(i);
+      } else if (pages[pages.length - 1] !== "...") {
+        pages.push("...");
+      }
+    }
+    return pages;
+  };
 
   return (
     <div>
@@ -88,14 +112,14 @@ export default async function InventoriesPage({ searchParams }: PageProps) {
           name="name"
           placeholder="Search name..."
           defaultValue={resolvedParams.name || ""}
-          className="px-3 py-2 bg-gray-800 border border-gray-700 rounded"
+          className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-sm focus:outline-none focus:border-blue-500"
         />
 
-        {/* sotr field */}
+        {/* sort field */}
         <select
           name="sort"
           defaultValue={resolvedParams.sort || "id"}
-          className="px-3 py-2 bg-gray-800 border border-gray-700 rounded"
+          className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-sm"
         >
           <option value="id">Sort by ID</option>
           <option value="name">Sort by Name</option>
@@ -107,7 +131,7 @@ export default async function InventoriesPage({ searchParams }: PageProps) {
         <select
           name="order"
           defaultValue={resolvedParams.order || "asc"}
-          className="px-3 py-2 bg-gray-800 border border-gray-700 rounded"
+          className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-sm"
         >
           <option value="asc">Ascending</option>
           <option value="desc">Descending</option>
@@ -119,7 +143,7 @@ export default async function InventoriesPage({ searchParams }: PageProps) {
         {/* apply button */}
         <button
           type="submit"
-          className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-md text-sm hover:from-blue-600 hover:to-indigo-700 transition duration-200 shadow-md"
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md text-sm transition-colors duration-200"
         >
           Apply
         </button>
@@ -128,92 +152,110 @@ export default async function InventoriesPage({ searchParams }: PageProps) {
       {/* inventory grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {inventories.map((item) => (
-          <Card key={item.id} className="relative">
-            {/* edit modal */}
+          <Card
+            key={item.id}
+            className="relative group p-6 flex flex-col h-full"
+          >
             <RoleGuard allowed={["ADMIN"]}>
-              <InventoryEditModal
-                id={item.id}
-                defaultData={{
-                  name: item.name,
-                  description: item.description,
-                  categoryId: item.categoryId,
-                }}
-              />
+              <div className="absolute top-3 right-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                <InventoryEditModal
+                  id={item.id}
+                  defaultData={{
+                    name: item.name,
+                    description: item.description,
+                    categoryId: item.categoryId,
+                  }}
+                />
+                <InventoryActions type="delete" id={item.id} />
+              </div>
             </RoleGuard>
 
-            {/* name */}
-            <h3 className="text-lg font-semibold mb-2">{item.name}</h3>
+            {/* Konten Utama */}
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold mb-2 pr-16">{item.name}</h3>
 
-            {/* description */}
-            <p className="text-sm text-gray-400">
-              Description: {item.description}
-            </p>
+              <p className="text-sm text-gray-400 mb-1">
+                <span className="font-medium text-gray-300">Description:</span>{" "}
+                {item.description}
+              </p>
 
-            {/* stock */}
-            <p className="text-sm text-gray-400">Stock: {item.stock}</p>
+              <p className="text-sm text-gray-400 mb-1">
+                <span className="font-medium text-gray-300">Stock:</span>{" "}
+                {item.stock}
+              </p>
 
-            {/* catergory */}
-            <p className="text-sm text-blue-400">
-              Category: {item.category?.name}
-            </p>
+              <p className="text-sm text-blue-400 mb-3">
+                <span className="font-medium text-gray-300">Category:</span>{" "}
+                {item.category?.name}
+              </p>
 
-            {/* details */}
-            <Link
-              href={`/inventories/${item.id}`}
-              className="text-xs text-gray-500 mt-2 block hover:text-blue-400 transition"
-            >
-              View Details →
-            </Link>
-
-            {/* delete */}
-            <RoleGuard allowed={["ADMIN"]}>
-              <InventoryActions type="delete" id={item.id} />
-            </RoleGuard>
+              <Link
+                href={`/inventories/${item.id}`}
+                className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors inline-flex items-center gap-1"
+              >
+                View Details <span>&rarr;</span>
+              </Link>
+            </div>
 
             {/* stock action */}
             <RoleGuard allowed={["ADMIN"]}>
-              <StockActions inventoryId={item.id} />
+              <div className="mt-6 pt-4 border-t border-gray-800">
+                <StockActions inventoryId={item.id} />
+              </div>
             </RoleGuard>
           </Card>
         ))}
       </div>
 
-      {/* pagination */}
-      <div className="flex justify-center items-center gap-4 mt-10">
-        {currentPage > 1 && (
-          <Link
-            href={{
-              pathname: "/inventories",
-              query: {
-                ...resolvedParams,
-                page: currentPage - 1,
-              },
-            }}
-            className="px-4 py-2 bg-gray-800 rounded hover:bg-gray-700 transition"
-          >
-            Previous
-          </Link>
-        )}
+      {totalPages > 0 && (
+        <div className="mt-10 mb-6 flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              {/* Previous Button */}
+              <PaginationItem>
+                <PaginationPrevious
+                  href={currentPage > 1 ? createPageURL(currentPage - 1) : "#"}
+                  className={
+                    currentPage <= 1 ? "pointer-events-none opacity-50" : ""
+                  }
+                />
+              </PaginationItem>
 
-        <span className="text-gray-400">
-          Page {currentPage} of {totalPages}
-        </span>
+              {/* Page Numbers & Ellipsis */}
+              {getPageNumbers().map((page, index) => (
+                <PaginationItem key={index}>
+                  {page === "..." ? (
+                    <PaginationEllipsis />
+                  ) : (
+                    <PaginationLink
+                      href={createPageURL(page)}
+                      isActive={currentPage === page}
+                    >
+                      {page}
+                    </PaginationLink>
+                  )}
+                </PaginationItem>
+              ))}
 
-        {currentPage < totalPages && (
-          <Link
-            href={{
-              pathname: "/inventories",
-              query: {
-                ...resolvedParams,
-                page: currentPage + 1,
-              },
-            }}
-            className="px-4 py-2 bg-gray-800 rounded hover:bg-gray-700 transition"
-          >
-            Next
-          </Link>
-        )}
-      </div>
+              {/* Next Button */}
+              <PaginationItem>
+                <PaginationNext
+                  href={
+                    currentPage < totalPages
+                      ? createPageURL(currentPage + 1)
+                      : "#"
+                  }
+                  className={
+                    currentPage >= totalPages
+                      ? "pointer-events-none opacity-50"
+                      : ""
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </div>
   );
 }

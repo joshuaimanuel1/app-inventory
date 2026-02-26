@@ -37,8 +37,6 @@ export default function RootLayout({
         >
           {children}
         </main>
-
-        {/* 3. Pasang Toaster premium kita di sini */}
         <Toaster />
       </body>
     </html>

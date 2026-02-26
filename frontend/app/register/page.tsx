@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -14,20 +17,40 @@ export default function RegisterPage() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
-    if (form.password !== form.confirmPassword) {
-      setError("Password tidak sama");
+    // 1. buat validasi Kolom Kosong
+    if (!form.email || !form.password || !form.confirmPassword) {
+      toast.error("Semua kolom harus diisi");
       return;
     }
 
-    setLoading(true);
+    // buat validasi format Email (Regex)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      toast.error(
+        "Masukkan format email yang valid (contoh: user@example.com)",
+      );
+      return;
+    }
+
+    // 3. buat validasi panjang Password
+    if (form.password.length < 6) {
+      toast.error("Password minimal 6 karakter");
+      return;
+    }
+
+    // 4. buat validasi konfirmasi Password
+    if (form.password !== form.confirmPassword) {
+      toast.error("Password dan konfirmasi password tidak cocok");
+      return;
+    }
 
     try {
+      setLoading(true);
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
         {
@@ -43,13 +66,13 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (!data.success) {
-        throw new Error(data.message);
+        throw new Error(data.message || "Register gagal");
       }
 
-      alert("Register berhasil. Silakan login.");
+      toast.success("Register berhasil! Silakan login.");
       router.replace("/login");
     } catch (err: any) {
-      setError(err.message || "Register gagal");
+      toast.error(err.message || "Register gagal. Silakan coba lagi.");
     } finally {
       setLoading(false);
     }
@@ -57,55 +80,76 @@ export default function RegisterPage() {
 
   return (
     <div className="flex items-center justify-center min-h-[80vh] px-4">
-      <div className="bg-[#0d1117] p-8 sm:p-10 rounded-xl shadow-2xl w-full max-w-md border border-gray-800">
-        <h1 className="text-2xl font-bold text-white mb-2">Register</h1>
-        <p className="text-gray-400 text-sm mb-8">
-          Buat akun baru untuk mengakses aplikasi
-        </p>
-
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-md text-sm mb-6">
-            {error}
-          </div>
-        )}
+      {/* Container utama */}
+      <div className="bg-[#0B0F19] p-8 sm:p-10 rounded-2xl shadow-xl w-full max-w-md border border-gray-800">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-white mb-2">Register</h1>
+          <p className="text-gray-400 text-sm">
+            Buat akun baru untuk mengakses aplikasi
+          </p>
+        </div>
 
         <form onSubmit={handleRegister} className="flex flex-col gap-5">
-          <input
-            type="email"
-            placeholder="Email"
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="w-full bg-transparent border border-gray-600 text-white rounded-md px-4 py-3 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-          />
+          {/* Email */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">
+              Email Address
+            </label>
+            <Input
+              type="email"
+              placeholder="user@example.com"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              className="bg-gray-900 border-gray-700 focus-visible:ring-blue-500 py-6"
+            />
+          </div>
 
-          <input
-            type="password"
-            placeholder="Password"
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="w-full bg-transparent border border-gray-600 text-white rounded-md px-4 py-3 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-          />
+          {/* Password */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">
+              Password
+            </label>
+            <Input
+              type="password"
+              placeholder="Min. 6 characters"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              className="bg-gray-900 border-gray-700 focus-visible:ring-blue-500 py-6"
+            />
+          </div>
 
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            onChange={(e) =>
-              setForm({ ...form, confirmPassword: e.target.value })
-            }
-            className="w-full bg-transparent border border-gray-600 text-white rounded-md px-4 py-3 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-          />
+          {/* Confirm Password */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">
+              Confirm Password
+            </label>
+            <Input
+              type="password"
+              placeholder="Retype your password"
+              value={form.confirmPassword}
+              onChange={(e) =>
+                setForm({ ...form, confirmPassword: e.target.value })
+              }
+              className="bg-gray-900 border-gray-700 focus-visible:ring-blue-500 py-6"
+            />
+          </div>
 
-          <button
+          <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 mt-2 rounded-md font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 mt-2 rounded-lg font-medium transition-colors"
           >
             {loading ? "Registering..." : "Register"}
-          </button>
+          </Button>
         </form>
 
-        <p className="text-center text-sm text-gray-300 mt-8">
+        <p className="text-center text-sm text-gray-400 mt-8">
           Sudah punya akun?{" "}
-          <Link href="/login" className="text-blue-500 hover:underline">
-            Login
+          <Link
+            href="/login"
+            className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+          >
+            Login di sini
           </Link>
         </p>
       </div>

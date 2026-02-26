@@ -20,7 +20,7 @@ export async function apiFetch<T>(
   });
 
   if (!res.ok) {
-    //siapkan pesan default (fallback)
+    //pesan default (fallback)
     let errorMessage = `API Error: ${res.status}`;
 
     try {
